@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from lxml import etree
+import json
+
 URL = 'https://www.buholegal.com/'
 
 NAME_CLASS = 'card-header text-center'
@@ -43,7 +44,24 @@ def request_one(number):
     return BeautifulSoup(response.content, 'html.parser')
 
 
+def write_data(data_dict):
+    with open('data.txt', 'a') as f:
+        json.dump(data_dict, f, ensure_ascii=False)
+        f.write('\n')
+
+
+def get_next():
+    with open('data.txt', 'r') as f:
+        read = f.readlines()
+    next_extract = json.loads(read[-1])['cedula'] + 1
+    print(f"now it's the turn for {next_extract}")
+    return next_extract
+
 
 if __name__ == '__main__':
-    data = request_one(1)
-    html = extract_data_from_html(data)
+    next_page = get_next()
+    while True:
+        data = request_one(next_page)
+        details = extract_data_from_html(data)
+        write_data(details)
+        next_page = get_next()
